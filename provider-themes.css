@@ -10,7 +10,7 @@ html[data-aipt-provider="gemini"] {
   --aipt-accent-bg: rgba(217, 119, 6, 0.08);
   --aipt-accent-badge: rgba(217, 119, 6, 0.2);
   --aipt-bg-panel: rgba(38, 34, 30, 0.97);
-  --aipt-bg-sidebar: rgba(30, 28, 26, 0.72);
+  --aipt-bg-sidebar: rgba(30, 28, 26, 0.50);
   --aipt-bg-button: rgba(45, 40, 36, 0.9);
   --aipt-bg-button-hover: rgba(60, 55, 48, 0.95);
   --aipt-border: rgba(255, 255, 255, 0.1);
@@ -25,7 +25,7 @@ html[data-aipt-provider="chatgpt"] {
   --aipt-accent-bg: rgba(16, 163, 127, 0.08);
   --aipt-accent-badge: rgba(16, 163, 127, 0.2);
   --aipt-bg-panel: rgba(32, 33, 35, 0.97);
-  --aipt-bg-sidebar: rgba(32, 33, 35, 0.72);
+  --aipt-bg-sidebar: rgba(32, 33, 35, 0.50);
   --aipt-bg-button: rgba(52, 53, 58, 0.9);
   --aipt-bg-button-hover: rgba(68, 70, 76, 0.95);
   --aipt-border: rgba(255, 255, 255, 0.1);
@@ -40,7 +40,7 @@ html[data-aipt-provider="claude"] {
   --aipt-accent-bg: rgba(217, 119, 6, 0.08);
   --aipt-accent-badge: rgba(217, 119, 6, 0.2);
   --aipt-bg-panel: rgba(38, 34, 30, 0.97);
-  --aipt-bg-sidebar: rgba(30, 28, 26, 0.72);
+  --aipt-bg-sidebar: rgba(30, 28, 26, 0.50);
   --aipt-bg-button: rgba(45, 40, 36, 0.9);
   --aipt-bg-button-hover: rgba(60, 55, 48, 0.95);
   --aipt-border: rgba(255, 255, 255, 0.1);
