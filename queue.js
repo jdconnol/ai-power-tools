@@ -500,12 +500,16 @@
       });
       obs.observe(document.body, { childList: true, subtree: true });
 
-      // Re-init on SPA navigation
+      // Re-init on SPA navigation — clear queue so old messages
+      // don't execute on the new conversation
       if (window.AIPowerTools.onNavigate) {
         window.AIPowerTools.onNavigate(() => {
+          console.log(LOG, "Navigation detected — clearing queue");
+          queue = [];
           interceptSetup = false;
           isProcessing = false;
           isSendingFromQueue = false;
+          renderQueueUI();
           setTimeout(trySetup, 1000);
         });
       }
