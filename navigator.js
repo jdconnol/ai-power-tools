@@ -89,6 +89,12 @@
 
       container.scrollTo({ top: scrollOffset, behavior: "smooth" });
 
+      // Flash highlight the target prompt in the main chat
+      promptEl.classList.remove("aipt-flash-highlight");
+      void promptEl.offsetWidth; // force reflow to restart animation
+      promptEl.classList.add("aipt-flash-highlight");
+      setTimeout(() => { promptEl.classList.remove("aipt-flash-highlight"); }, 1300);
+
       lockTimer = setTimeout(() => { mainDriving = false; }, 800);
     }
 
