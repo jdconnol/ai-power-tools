@@ -259,17 +259,36 @@
       }, true);
 
       // Intercept send button clicks (capture phase)
-      document.addEventListener("click", function (e) {
+      // Use mousedown + pointerdown + click to catch before ChatGPT's handlers
+      function interceptSendClick(e) {
         const sendBtn = P.getSendButton();
         if (!sendBtn) return;
         if (e.target === sendBtn || sendBtn.contains(e.target)) {
           if (shouldInterceptSend()) {
             e.preventDefault();
             e.stopImmediatePropagation();
-            interceptAndQueue();
+            if (e.type === "click" || e.type === "pointerdown") {
+              interceptAndQueue();
+            }
           }
         }
-      }, true);
+      }
+      document.addEventListener("pointerdown", interceptSendClick, true);
+      document.addEventListener("mousedown", interceptSendClick, true);
+      document.addEventListener("click", interceptSendClick, true);
+
+      // Intercept form submit (catches programmatic submissions)
+      const form = editor.closest("form");
+      if (form) {
+        form.addEventListener("submit", function (e) {
+          if (shouldInterceptSend()) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            interceptAndQueue();
+          }
+        }, true);
+        console.log(LOG, "Form submit interception added");
+      }
 
       interceptSetup = true;
       console.log(LOG, "Send interception setup complete");

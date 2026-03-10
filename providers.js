@@ -134,6 +134,9 @@
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
       },
+      getContentPushCSS(navWidth) {
+        return ".bard-logo-container { display: none !important; }";
+      },
       extractPrompts() {
         const prompts = [];
         const elements = document.querySelectorAll(
@@ -232,8 +235,17 @@
         if (document.querySelector('[data-testid="stop-button"]')) return true;
         if (document.querySelector('button[aria-label="Stop generating"]')) return true;
         if (document.querySelector('button[aria-label="Stop"]')) return true;
+        if (document.querySelector('button[aria-label="Stop response"]')) return true;
         if (document.querySelector('[data-is-streaming="true"]')) return true;
         if (document.querySelector(".result-thinking")) return true;
+        // Detect "Thinking" state in ChatGPT 5.x extended thinking mode
+        if (document.querySelector('[class*="thinking"]')) return true;
+        // Check if the send button has become a stop button (square icon)
+        const sendBtn = document.querySelector('[data-testid="send-button"]');
+        if (sendBtn) {
+          const label = sendBtn.getAttribute("aria-label") || "";
+          if (label.toLowerCase().includes("stop")) return true;
+        }
         const assistantMsgs = document.querySelectorAll('[data-message-author-role="assistant"]');
         if (assistantMsgs.length > 0) {
           const last = assistantMsgs[assistantMsgs.length - 1];
@@ -242,7 +254,7 @@
         }
         return false;
       },
-      busyObserverConfig: { childList: true, subtree: true },
+      busyObserverConfig: { childList: true, subtree: true, attributes: true, attributeFilter: ["data-is-streaming", "aria-label"] },
 
       getEditor() {
         return (
@@ -275,6 +287,9 @@
       },
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
+      },
+      getContentPushCSS(navWidth) {
+        return "main { padding-left: " + navWidth + "px !important; }";
       },
       extractPrompts() {
         const prompts = [];
@@ -417,6 +432,9 @@
       },
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
+      },
+      getContentPushCSS(navWidth) {
+        return "";
       },
       extractPrompts() {
         const prompts = [];

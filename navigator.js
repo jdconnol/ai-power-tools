@@ -22,6 +22,25 @@
     let lockTimer = null;
 
     // =====================================================================
+    // Content push — shift main content right when sidebar is visible
+    // =====================================================================
+    function updateContentPush() {
+      let styleEl = document.getElementById("aipt-content-push");
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "aipt-content-push";
+        document.head.appendChild(styleEl);
+      }
+
+      const isVisible = !sidebarCollapsed && !autoHidden;
+      if (isVisible && P.getContentPushCSS) {
+        styleEl.textContent = P.getContentPushCSS(200);
+      } else {
+        styleEl.textContent = "";
+      }
+    }
+
+    // =====================================================================
     // Position sidebar relative to platform sidebar
     // =====================================================================
     function positionSidebar() {
@@ -43,6 +62,7 @@
           toggle.classList.add("gn-toggle-collapsed");
           updateToggleIcon(toggle);
         }
+        updateContentPush();
         return;
       }
 
@@ -60,6 +80,8 @@
         toggle.style.left = (sidebarCollapsed ? platformWidth : platformWidth + navWidth) + "px";
         updateToggleIcon(toggle);
       }
+
+      updateContentPush();
     }
 
     // Watch platform sidebar for resize
@@ -146,6 +168,7 @@
           toggle.classList.toggle("gn-toggle-collapsed", sidebarCollapsed);
           updateToggleIcon(toggle);
           positionSidebar();
+          updateContentPush();
         });
         updateToggleIcon(toggle);
         document.body.appendChild(toggle);
