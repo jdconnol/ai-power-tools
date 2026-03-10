@@ -224,6 +224,8 @@
     }
 
     function injectButton() {
+      // Skip scroll button for providers that have a built-in one
+      if (P.skipScrollButton) return;
       if (document.getElementById(BUTTON_ID)) return;
 
       const btn = document.createElement("button");

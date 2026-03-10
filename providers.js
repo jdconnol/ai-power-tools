@@ -180,6 +180,7 @@
       name: "ChatGPT",
       hostname: "chatgpt.com",
       storageKey: "enableChatGPT",
+      skipScrollButton: true, // ChatGPT has a built-in scroll-to-bottom
 
       selectors: {
         editor: "#prompt-textarea",
@@ -273,7 +274,7 @@
         return document.querySelector("nav");
       },
       shouldAutoHide(sidebarWidth, remainingSpace) {
-        return sidebarWidth > 100 || remainingSpace < 600;
+        return remainingSpace < 600;
       },
       extractPrompts() {
         const prompts = [];
@@ -293,8 +294,10 @@
           (window.AIPowerTools.findInputBar ? window.AIPowerTools.findInputBar() : null);
         if (inputArea) {
           const rect = inputArea.getBoundingClientRect();
+          const btnWidth = btn.getBoundingClientRect().width || 80;
+          const centerX = rect.left + rect.width / 2;
           btn.style.top = rect.bottom - 40 + "px";
-          btn.style.left = rect.right - 180 + "px";
+          btn.style.left = (centerX - btnWidth / 2) + "px";
         }
       },
 
@@ -312,6 +315,7 @@
       name: "Claude",
       hostname: "claude.ai",
       storageKey: "enableClaude",
+      skipScrollButton: true, // Claude has a built-in scroll-to-bottom
 
       selectors: {
         editor: '[data-testid="chat-input"]',
@@ -412,7 +416,7 @@
           document.querySelector('nav[aria-label="Sidebar"]');
       },
       shouldAutoHide(sidebarWidth, remainingSpace) {
-        return sidebarWidth > 100 || remainingSpace < 600;
+        return remainingSpace < 600;
       },
       extractPrompts() {
         const prompts = [];
@@ -445,8 +449,10 @@
           (window.AIPowerTools.findInputBar ? window.AIPowerTools.findInputBar() : null);
         if (inputArea) {
           const rect = inputArea.getBoundingClientRect();
+          const btnWidth = btn.getBoundingClientRect().width || 80;
+          const centerX = rect.left + rect.width / 2;
           btn.style.top = rect.bottom - 40 + "px";
-          btn.style.left = rect.right - 180 + "px";
+          btn.style.left = (centerX - btnWidth / 2) + "px";
         }
       },
 
