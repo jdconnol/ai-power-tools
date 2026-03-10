@@ -73,8 +73,11 @@
         if (toggle) toggle.classList.remove("gn-toggle-collapsed");
       }
 
+      const topOffset = P.navTopOffset || 0;
       sidebar.style.left = platformWidth + "px";
       sidebar.style.width = navWidth + "px";
+      sidebar.style.top = topOffset + "px";
+      sidebar.style.height = "calc(100vh - " + topOffset + "px)";
 
       if (toggle) {
         toggle.style.left = (sidebarCollapsed ? platformWidth : platformWidth + navWidth) + "px";

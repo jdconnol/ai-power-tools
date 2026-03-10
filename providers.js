@@ -134,6 +134,7 @@
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
       },
+      navTopOffset: 0,
       getContentPushCSS(navWidth) {
         return ".bard-logo-container { display: none !important; }";
       },
@@ -288,6 +289,7 @@
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
       },
+      navTopOffset: 0,
       getContentPushCSS(navWidth) {
         return "main { padding-left: " + navWidth + "px !important; }";
       },
@@ -433,6 +435,7 @@
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
       },
+      navTopOffset: 48,
       getContentPushCSS(navWidth) {
         return "";
       },
