@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "AI Power Tools",
+  "description": "Scroll-to-bottom button, message queue, and conversation navigator for Gemini, ChatGPT, and Claude",
+  "version": "1.0",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    },
+    "default_title": "AI Power Tools"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://gemini.google.com/*",
+        "https://chatgpt.com/*",
+        "https://claude.ai/*"
+      ],
+      "js": [
+        "providers.js",
+        "icons.js",
+        "content.js",
+        "queue.js",
+        "navigator.js"
+      ],
+      "css": [
+        "provider-themes.css",
+        "styles.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

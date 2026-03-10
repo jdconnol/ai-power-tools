@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Power Tools — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>AI Power Tools</h1>
+
+    <section>
+      <h2>Providers</h2>
+      <p class="hint">Enable or disable the extension for each AI platform. Changes take effect on the next page load.</p>
+
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="enable-gemini" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label">Gemini</span>
+      </div>
+
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="enable-chatgpt" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label">ChatGPT</span>
+      </div>
+
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="enable-claude" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label">Claude</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Message Queue</h2>
+
+      <div class="field">
+        <label for="queue-modifier">Explicit "Add to Queue" shortcut modifier</label>
+        <p class="hint">Hold this key + Enter to explicitly add a message to the queue (even when the AI is idle). Leave empty to disable the explicit shortcut.</p>
+        <select id="queue-modifier">
+          <option value="">None (disabled)</option>
+          <option value="ctrl">Ctrl + Enter</option>
+          <option value="alt">Alt + Enter</option>
+          <option value="shift">Shift + Enter</option>
+          <option value="meta">Cmd / Win + Enter</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Auto-intercept behavior</label>
+        <p class="hint">When the AI is busy generating a response, pressing Enter will automatically queue your message instead of sending it. This is always enabled.</p>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button id="save-btn">Save</button>
+      <span id="status"></span>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

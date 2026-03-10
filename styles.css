@@ -1,0 +1,393 @@
+/* =========================================================================
+   AI Power Tools — Unified Structural CSS
+   Uses var(--aipt-*) custom properties from provider-themes.css
+   ========================================================================= */
+
+/* =========================================================================
+   Scroll-to-Bottom Button
+   ========================================================================= */
+
+#aipt-scroll-btn {
+  position: fixed;
+  z-index: 999999;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--aipt-bg-button);
+  border: 1px solid var(--aipt-border);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+#aipt-scroll-btn:hover {
+  background: var(--aipt-bg-button-hover);
+  color: #fff;
+}
+
+#aipt-scroll-btn.gsb-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+}
+
+/* =========================================================================
+   Queue Panel — positioned above the input bar
+   ========================================================================= */
+
+#aipt-queue-panel {
+  position: fixed;
+  z-index: 999998;
+  background: var(--aipt-bg-panel);
+  border: 1px solid var(--aipt-border);
+  border-radius: 12px;
+  padding: 0;
+  max-height: 300px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  display: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#aipt-queue-panel.gq-visible {
+  display: block;
+}
+
+#aipt-queue-panel.gq-collapsed .gq-items {
+  display: none;
+}
+
+/* Header */
+.gq-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--aipt-border-subtle);
+  cursor: pointer;
+  user-select: none;
+}
+
+.gq-collapse-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s;
+}
+
+#aipt-queue-panel.gq-collapsed .gq-collapse-btn {
+  transform: rotate(-90deg);
+}
+
+.gq-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
+.gq-badge {
+  background: var(--aipt-accent-badge);
+  color: var(--aipt-accent);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 8px;
+}
+
+.gq-clear-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.gq-clear-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Items container */
+.gq-items {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.gq-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  gap: 8px;
+  border-bottom: 1px solid var(--aipt-border-item);
+}
+
+.gq-item:last-child {
+  border-bottom: none;
+}
+
+.gq-item-badge {
+  background: var(--aipt-accent-badge);
+  color: var(--aipt-accent);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.gq-item-text {
+  flex: 1;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.gq-item-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.gq-item-remove:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Drag handle */
+.gq-item-handle {
+  color: rgba(255, 255, 255, 0.25);
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
+.gq-item-handle:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.gq-item-handle:active {
+  cursor: grabbing;
+}
+
+/* Drag states */
+.gq-item-dragging {
+  opacity: 0.4;
+}
+
+.gq-item-dragover {
+  border-top: 2px solid var(--aipt-accent);
+}
+
+/* =========================================================================
+   "Add to Queue" button — near the send button
+   ========================================================================= */
+
+#aipt-queue-btn {
+  position: fixed;
+  z-index: 999998;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 12px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+#aipt-queue-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.gq-add-label {
+  pointer-events: none;
+}
+
+/* =========================================================================
+   Conversation Navigator Sidebar
+   ========================================================================= */
+
+#aipt-nav-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 100vh;
+  z-index: 999990;
+  background: var(--aipt-bg-sidebar);
+  border-right: 1px solid var(--aipt-border-subtle);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s ease, opacity 0.25s ease;
+  overflow: hidden;
+}
+
+#aipt-nav-sidebar.gn-collapsed {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Header */
+.gn-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--aipt-border-subtle);
+  flex-shrink: 0;
+}
+
+.gn-title {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.gn-count {
+  background: var(--aipt-accent-badge);
+  color: var(--aipt-accent);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+/* Scrollable prompt list */
+.gn-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.gn-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.gn-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gn-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+.gn-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Individual prompt item */
+.gn-item {
+  padding: 8px 14px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 3px solid transparent;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.gn-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Active prompt */
+.gn-item.gn-active {
+  background: var(--aipt-accent-bg);
+  color: rgba(255, 255, 255, 0.95);
+  border-left-color: var(--aipt-accent);
+  font-weight: 500;
+}
+
+/* =========================================================================
+   Toggle Button
+   ========================================================================= */
+
+#aipt-nav-toggle {
+  position: fixed;
+  top: 50%;
+  left: 200px;
+  transform: translateY(-50%);
+  z-index: 999991;
+  width: 24px;
+  height: 48px;
+  background: var(--aipt-bg-sidebar);
+  border: 1px solid var(--aipt-border);
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: left 0.25s ease, background 0.15s, color 0.15s;
+}
+
+#aipt-nav-toggle:hover {
+  background: var(--aipt-bg-button-hover);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+#aipt-nav-toggle.gn-toggle-collapsed {
+  left: 0;
+}
+
+/* =========================================================================
+   Responsive — hide navigator on narrow viewports
+   ========================================================================= */
+
+@media (max-width: 900px) {
+  #aipt-nav-sidebar {
+    display: none !important;
+  }
+
+  #aipt-nav-toggle {
+    display: none !important;
+  }
+}
