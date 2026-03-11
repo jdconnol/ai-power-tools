@@ -59,6 +59,7 @@
         sidebar.classList.add("gn-collapsed");
         if (toggle) {
           toggle.style.left = platformWidth + "px";
+          toggle.style.top = ((P.navTopOffset || 0) + 14) + "px";
           toggle.classList.add("gn-toggle-collapsed");
           updateToggleIcon(toggle);
         }
@@ -81,6 +82,7 @@
 
       if (toggle) {
         toggle.style.left = (sidebarCollapsed ? platformWidth : platformWidth + navWidth) + "px";
+        toggle.style.top = (topOffset + 14) + "px";
         updateToggleIcon(toggle);
       }
 
@@ -114,13 +116,48 @@
 
       container.scrollTo({ top: scrollOffset, behavior: "smooth" });
 
-      // Flash highlight the target prompt in the main chat
-      promptEl.classList.remove("aipt-flash-highlight");
-      void promptEl.offsetWidth; // force reflow to restart animation
-      promptEl.classList.add("aipt-flash-highlight");
-      setTimeout(() => { promptEl.classList.remove("aipt-flash-highlight"); }, 1300);
+      // Flash highlight — overlay approach for reliability across all hosts
+      setTimeout(() => flashHighlight(promptEl), 400);
 
       lockTimer = setTimeout(() => { mainDriving = false; }, 800);
+    }
+
+    // =====================================================================
+    // Flash highlight overlay — fixed-position overlay on document.body
+    // Uses position:fixed to avoid scroll-container overflow clipping.
+    // =====================================================================
+    function flashHighlight(el) {
+      // Remove any existing overlay
+      const old = document.getElementById("aipt-flash-overlay");
+      if (old) old.remove();
+
+      const rect = el.getBoundingClientRect();
+
+      const overlay = document.createElement("div");
+      overlay.id = "aipt-flash-overlay";
+
+      // Use position:fixed with viewport coordinates — no clipping issues
+      overlay.style.cssText = [
+        "position: fixed",
+        "top: " + (rect.top - 4) + "px",
+        "left: " + (rect.left - 4) + "px",
+        "width: " + (rect.width + 8) + "px",
+        "height: " + (rect.height + 8) + "px",
+        "border: 3px solid rgb(59, 130, 246)",
+        "border-radius: 12px",
+        "box-shadow: 0 0 20px rgba(59, 130, 246, 0.5)",
+        "pointer-events: none",
+        "z-index: 2147483647",
+        "transition: opacity 1.5s ease-out",
+        "opacity: 1",
+      ].join("; ");
+
+      document.body.appendChild(overlay);
+
+      // Start fade after hold period
+      setTimeout(() => { overlay.style.opacity = "0"; }, 2000);
+      // Remove from DOM after fade completes
+      setTimeout(() => { overlay.remove(); }, 3800);
     }
 
     // =====================================================================

@@ -357,14 +357,7 @@
    Flash Highlight — blue outline pulse on navigated prompt
    ========================================================================= */
 
-@keyframes aipt-flash {
-  0%   { outline: 3px solid rgba(59, 130, 246, 0.8); outline-offset: 2px; }
-  100% { outline: 3px solid rgba(59, 130, 246, 0);   outline-offset: 6px; }
-}
-
-.aipt-flash-highlight {
-  animation: aipt-flash 1.2s ease-out forwards;
-}
+/* Flash highlight is now handled by a JS overlay in navigator.js */
 
 /* =========================================================================
    Toggle Button
@@ -372,9 +365,8 @@
 
 #aipt-nav-toggle {
   position: fixed;
-  top: 50%;
+  top: 14px;
   left: 200px;
-  transform: translateY(-50%);
   z-index: 999991;
   width: 24px;
   height: 48px;
@@ -400,6 +392,28 @@
 
 #aipt-nav-toggle.gn-toggle-collapsed {
   left: 0;
+}
+
+/* =========================================================================
+   Responsive — hide navigator on narrow viewports
+   ========================================================================= */
+
+/* =========================================================================
+   Queue Dot Indicator — orange dot on sidebar chats with active queues
+   ========================================================================= */
+
+.aipt-queue-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--aipt-accent);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 8px;
+  flex-shrink: 0;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* =========================================================================

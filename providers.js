@@ -169,6 +169,22 @@
         }
       },
 
+      // --- Chat ID extraction ---
+      getChatId() {
+        const parts = location.pathname.split("/app/");
+        return parts[1] || null;
+      },
+
+      // --- Sidebar chat links for queue dot indicators ---
+      getSidebarChatLinks() {
+        const links = document.querySelectorAll('a.conversation[href*="/app/"]');
+        return Array.from(links).map(function (el) {
+          const href = el.getAttribute("href") || el.href || "";
+          const parts = href.split("/app/");
+          return { element: el, chatId: parts[1] || null };
+        }).filter(function (x) { return x.chatId; });
+      },
+
       // --- Scroll container search: provider-specific anchors ---
       findScrollContainerAnchors() {
         return (
@@ -289,7 +305,7 @@
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
       },
-      navTopOffset: 0,
+      navTopOffset: 52,
       getContentPushCSS(navWidth) {
         return "main { padding-left: " + navWidth + "px !important; }";
       },
@@ -317,6 +333,15 @@
           btn.style.left = (centerX - btnWidth / 2) + "px";
         }
       },
+
+      // --- Chat ID extraction ---
+      getChatId() {
+        const parts = location.pathname.split("/c/");
+        return parts[1] || null;
+      },
+
+      // --- Sidebar chat links (placeholder — implemented after Gemini confirmed) ---
+      getSidebarChatLinks() { return []; },
 
       findScrollContainerAnchors() {
         return (
@@ -476,6 +501,15 @@
           btn.style.left = (centerX - btnWidth / 2) + "px";
         }
       },
+
+      // --- Chat ID extraction ---
+      getChatId() {
+        const parts = location.pathname.split("/chat/");
+        return parts[1] || null;
+      },
+
+      // --- Sidebar chat links (placeholder — implemented after Gemini confirmed) ---
+      getSidebarChatLinks() { return []; },
 
       findScrollContainerAnchors() {
         return (

@@ -41,6 +41,57 @@
     let isCollapsed = false;
     let interceptSetup = false;
 
+    // =====================================================================
+    // Per-chat queue persistence (chrome.storage.local)
+    // =====================================================================
+    // trackedChatId holds the chatId we're currently operating on.
+    // This is critical because during SPA navigation, location.pathname
+    // changes BEFORE our navigate callback fires, so we need to save
+    // the queue under the OLD chatId, not the new one.
+    let trackedChatId = null;
+
+    function getLiveChatId() {
+      return P.getChatId ? P.getChatId() : null;
+    }
+
+    function saveQueueToStorage() {
+      const chatId = trackedChatId;
+      if (!chatId) return;
+      if (queue.length === 0) {
+        chrome.storage.local.remove("queue_" + chatId);
+        updateQueueIndex(chatId, 0);
+        return;
+      }
+      chrome.storage.local.set({ ["queue_" + chatId]: queue });
+      updateQueueIndex(chatId, queue.length);
+    }
+
+    function loadQueueFromStorage(callback) {
+      const chatId = getLiveChatId();
+      if (!chatId) { callback([]); return; }
+      chrome.storage.local.get("queue_" + chatId, function (data) {
+        callback(data["queue_" + chatId] || []);
+      });
+    }
+
+    function updateQueueIndex(chatId, count) {
+      if (!chatId) return;
+      chrome.storage.local.get("queueIndex", function (data) {
+        var index = data.queueIndex || {};
+        if (count > 0) {
+          index[chatId] = count;
+        } else {
+          delete index[chatId];
+        }
+        chrome.storage.local.set({ queueIndex: index }, function () {
+          updateSidebarDots();
+        });
+      });
+    }
+
+    // =====================================================================
+    // Queue mutations
+    // =====================================================================
     function addToQueue(text) {
       queue.push({
         id: Date.now() + "-" + Math.random().toString(36).substr(2, 5),
@@ -48,7 +99,8 @@
         addedAt: Date.now(),
       });
       renderQueueUI();
-      if (!P.isBusy() && !isProcessing && queue.length === 1) {
+      saveQueueToStorage();
+      if (!P.isBusy() && !isProcessing) {
         console.log(LOG, "Item added while idle — starting queue processing");
         onBecameIdle();
       }
@@ -57,6 +109,7 @@
     function removeFromQueue(id) {
       queue = queue.filter((item) => item.id !== id);
       renderQueueUI();
+      saveQueueToStorage();
       if (queue.length === 0) isProcessing = false;
     }
 
@@ -64,17 +117,21 @@
       queue = [];
       isProcessing = false;
       renderQueueUI();
+      saveQueueToStorage();
     }
 
     function reorderQueue(fromIndex, toIndex) {
       const item = queue.splice(fromIndex, 1)[0];
       queue.splice(toIndex, 0, item);
       renderQueueUI();
+      saveQueueToStorage();
     }
 
     function getNextMessage() {
       if (queue.length === 0) return null;
-      return queue.shift();
+      var item = queue.shift();
+      saveQueueToStorage();
+      return item;
     }
 
     // =====================================================================
@@ -95,6 +152,19 @@
     // =====================================================================
     // Auto-processing
     // =====================================================================
+    let retryTimer = null;
+
+    function scheduleRetry() {
+      if (retryTimer) clearTimeout(retryTimer);
+      retryTimer = setTimeout(function () {
+        retryTimer = null;
+        if (queue.length > 0 && !isProcessing && !P.isBusy()) {
+          console.log(LOG, "Retry: attempting to process queue");
+          onBecameIdle();
+        }
+      }, 3000);
+    }
+
     function onBecameIdle() {
       console.log(LOG, "Became idle. Queue length:", queue.length);
       if (queue.length === 0) {
@@ -105,7 +175,9 @@
 
       setTimeout(async () => {
         if (P.isBusy()) {
-          console.log(LOG, "Still busy after delay, skipping");
+          console.log(LOG, "Still busy after delay, will retry");
+          isProcessing = false;
+          scheduleRetry();
           return;
         }
         const nextItem = getNextMessage();
@@ -118,10 +190,12 @@
 
         const success = await sendMessage(nextItem.text);
         if (!success) {
-          console.log(LOG, "Auto-send failed, re-queuing");
+          console.log(LOG, "Auto-send failed, re-queuing and scheduling retry");
           queue.unshift(nextItem);
+          saveQueueToStorage();
           isProcessing = false;
           renderQueueUI();
+          scheduleRetry();
         } else {
           console.log(LOG, "Auto-send succeeded");
         }
@@ -471,9 +545,50 @@
     }
 
     // =====================================================================
+    // Sidebar queue-dot indicator
+    // =====================================================================
+    let dotTimer = null;
+
+    function updateSidebarDots() {
+      if (!P.getSidebarChatLinks) return;
+
+      chrome.storage.local.get("queueIndex", function (data) {
+        var index = data.queueIndex || {};
+        var links = P.getSidebarChatLinks();
+
+        // Remove all existing dots
+        document.querySelectorAll(".aipt-queue-dot").forEach(function (el) { el.remove(); });
+
+        // Add dots for chats with queued items
+        links.forEach(function (item) {
+          if (index[item.chatId] && index[item.chatId] > 0) {
+            var dot = document.createElement("div");
+            dot.className = "aipt-queue-dot";
+            dot.title = index[item.chatId] + " queued message(s)";
+            item.element.appendChild(dot);
+          }
+        });
+      });
+    }
+
+    function watchSidebarForDotUpdates() {
+      var sidebarEl = P.getPlatformSidebarElement();
+      if (!sidebarEl) return;
+      var observer = new MutationObserver(function () {
+        clearTimeout(dotTimer);
+        dotTimer = setTimeout(updateSidebarDots, 300);
+      });
+      observer.observe(sidebarEl, { childList: true, subtree: true });
+    }
+
+    // =====================================================================
     // Initialization
     // =====================================================================
     function init() {
+      // Initialize tracked chatId from the current URL
+      trackedChatId = getLiveChatId();
+      console.log(LOG, "Initialized for chat:", trackedChatId);
+
       loadSettings();
       setupBusyWatcher();
 
@@ -500,17 +615,65 @@
       });
       obs.observe(document.body, { childList: true, subtree: true });
 
-      // Re-init on SPA navigation — clear queue so old messages
-      // don't execute on the new conversation
+      // Load saved queue for this chat
+      loadQueueFromStorage(function (savedQueue) {
+        if (savedQueue.length > 0) {
+          queue = savedQueue;
+          console.log(LOG, "Restored queue for chat:", trackedChatId, "items:", queue.length);
+          renderQueueUI();
+          // If idle and there are items, start processing
+          if (!P.isBusy() && queue.length > 0) {
+            onBecameIdle();
+          }
+        }
+      });
+
+      // Initialize sidebar dot indicators
+      updateSidebarDots();
+      watchSidebarForDotUpdates();
+
+      // Listen for cross-tab queueIndex changes
+      chrome.storage.onChanged.addListener(function (changes, area) {
+        if (area === "local" && changes.queueIndex) {
+          updateSidebarDots();
+        }
+      });
+
+      // Re-init on SPA navigation — save current queue, load new chat's queue
       if (window.AIPowerTools.onNavigate) {
-        window.AIPowerTools.onNavigate(() => {
-          console.log(LOG, "Navigation detected — clearing queue");
+        window.AIPowerTools.onNavigate(function () {
+          console.log(LOG, "Navigation detected — saving queue for chat:", trackedChatId);
+          // Save current queue under the OLD chatId (trackedChatId still
+          // points to the previous chat because we haven't updated it yet)
+          saveQueueToStorage();
+
+          // Now switch tracked chatId to the new chat
+          trackedChatId = getLiveChatId();
+          console.log(LOG, "Switched to new chat:", trackedChatId);
+
+          // Clear in-memory queue for the transition
           queue = [];
+
+          // Reset processing state
           interceptSetup = false;
           isProcessing = false;
           isSendingFromQueue = false;
-          renderQueueUI();
-          setTimeout(trySetup, 1000);
+          if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+
+          // Load queue for new chat after URL settles
+          setTimeout(function () {
+            loadQueueFromStorage(function (savedQueue) {
+              queue = savedQueue;
+              console.log(LOG, "Loaded queue for new chat:", trackedChatId, "items:", queue.length);
+              renderQueueUI();
+              trySetup();
+              updateSidebarDots();
+              // If idle and there are items, start processing
+              if (!P.isBusy() && queue.length > 0) {
+                onBecameIdle();
+              }
+            });
+          }, 1000);
         });
       }
     }
