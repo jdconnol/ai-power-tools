@@ -16,8 +16,7 @@
     let autoHidden = false;
     let activeIndex = -1;
 
-    // Lock flags to prevent scroll feedback loops
-    let sidebarDriving = false;
+    // Lock flag to prevent scroll feedback loop when clicking a sidebar item
     let mainDriving = false;
     let lockTimer = null;
 
@@ -315,42 +314,11 @@
 
       // Main scroll → highlight sidebar item
       container.addEventListener("scroll", throttle(() => {
-        if (mainDriving || sidebarDriving) return;
+        if (mainDriving) return;
         const idx = getCurrentPromptIndex(prompts);
         if (idx !== activeIndex) setActiveIndex(idx, prompts);
       }, 100), { passive: true });
 
-      // Sidebar scroll → drive main conversation
-      listEl.addEventListener("scroll", throttle(() => {
-        if (mainDriving) return;
-
-        sidebarDriving = true;
-        clearTimeout(lockTimer);
-
-        const listRect = listEl.getBoundingClientRect();
-        const listCenter = listRect.top + listRect.height / 2;
-        const items = listEl.querySelectorAll(".gn-item");
-        let closestIdx = 0;
-        let closestDist = Infinity;
-
-        items.forEach((item, i) => {
-          const itemRect = item.getBoundingClientRect();
-          const itemCenter = itemRect.top + itemRect.height / 2;
-          const dist = Math.abs(itemCenter - listCenter);
-          if (dist < closestDist) {
-            closestDist = dist;
-            closestIdx = i;
-          }
-        });
-
-        if (closestIdx !== activeIndex && prompts[closestIdx]) {
-          activeIndex = closestIdx;
-          items.forEach((el, i) => el.classList.toggle("gn-active", i === closestIdx));
-          scrollMainToPrompt(prompts[closestIdx].element);
-        }
-
-        lockTimer = setTimeout(() => { sidebarDriving = false; }, 600);
-      }, 150), { passive: true });
     }
 
     // =====================================================================
