@@ -134,6 +134,10 @@
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
       },
+      navTopOffset: 0,
+      getContentPushCSS(navWidth) {
+        return ".bard-logo-container { display: none !important; }";
+      },
       extractPrompts() {
         const prompts = [];
         const elements = document.querySelectorAll(
@@ -163,6 +167,22 @@
           btn.style.top = rect.bottom - 40 + "px";
           btn.style.left = (centerX - btnWidth / 2) + "px";
         }
+      },
+
+      // --- Chat ID extraction ---
+      getChatId() {
+        const parts = location.pathname.split("/app/");
+        return parts[1] || null;
+      },
+
+      // --- Sidebar chat links for queue dot indicators ---
+      getSidebarChatLinks() {
+        const links = document.querySelectorAll('a.conversation[href*="/app/"]');
+        return Array.from(links).map(function (el) {
+          const href = el.getAttribute("href") || el.href || "";
+          const parts = href.split("/app/");
+          return { element: el, chatId: parts[1] || null };
+        }).filter(function (x) { return x.chatId; });
       },
 
       // --- Scroll container search: provider-specific anchors ---
@@ -232,8 +252,17 @@
         if (document.querySelector('[data-testid="stop-button"]')) return true;
         if (document.querySelector('button[aria-label="Stop generating"]')) return true;
         if (document.querySelector('button[aria-label="Stop"]')) return true;
+        if (document.querySelector('button[aria-label="Stop response"]')) return true;
         if (document.querySelector('[data-is-streaming="true"]')) return true;
         if (document.querySelector(".result-thinking")) return true;
+        // Detect "Thinking" state in ChatGPT 5.x extended thinking mode
+        if (document.querySelector('[class*="thinking"]')) return true;
+        // Check if the send button has become a stop button (square icon)
+        const sendBtn = document.querySelector('[data-testid="send-button"]');
+        if (sendBtn) {
+          const label = sendBtn.getAttribute("aria-label") || "";
+          if (label.toLowerCase().includes("stop")) return true;
+        }
         const assistantMsgs = document.querySelectorAll('[data-message-author-role="assistant"]');
         if (assistantMsgs.length > 0) {
           const last = assistantMsgs[assistantMsgs.length - 1];
@@ -242,7 +271,7 @@
         }
         return false;
       },
-      busyObserverConfig: { childList: true, subtree: true },
+      busyObserverConfig: { childList: true, subtree: true, attributes: true, attributeFilter: ["data-is-streaming", "aria-label"] },
 
       getEditor() {
         return (
@@ -276,6 +305,10 @@
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
       },
+      navTopOffset: 52,
+      getContentPushCSS(navWidth) {
+        return "main { padding-left: " + navWidth + "px !important; }";
+      },
       extractPrompts() {
         const prompts = [];
         const elements = document.querySelectorAll('[data-message-author-role="user"]');
@@ -300,6 +333,15 @@
           btn.style.left = (centerX - btnWidth / 2) + "px";
         }
       },
+
+      // --- Chat ID extraction ---
+      getChatId() {
+        const parts = location.pathname.split("/c/");
+        return parts[1] || null;
+      },
+
+      // --- Sidebar chat links (placeholder — implemented after Gemini confirmed) ---
+      getSidebarChatLinks() { return []; },
 
       findScrollContainerAnchors() {
         return (
@@ -418,6 +460,10 @@
       shouldAutoHide(sidebarWidth, remainingSpace) {
         return remainingSpace < 600;
       },
+      navTopOffset: 48,
+      getContentPushCSS(navWidth) {
+        return "";
+      },
       extractPrompts() {
         const prompts = [];
         const elements = document.querySelectorAll('[data-testid="user-message"]');
@@ -455,6 +501,15 @@
           btn.style.left = (centerX - btnWidth / 2) + "px";
         }
       },
+
+      // --- Chat ID extraction ---
+      getChatId() {
+        const parts = location.pathname.split("/chat/");
+        return parts[1] || null;
+      },
+
+      // --- Sidebar chat links (placeholder — implemented after Gemini confirmed) ---
+      getSidebarChatLinks() { return []; },
 
       findScrollContainerAnchors() {
         return (

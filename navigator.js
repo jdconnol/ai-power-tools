@@ -16,10 +16,28 @@
     let autoHidden = false;
     let activeIndex = -1;
 
-    // Lock flags to prevent scroll feedback loops
-    let sidebarDriving = false;
+    // Lock flag to prevent scroll feedback loop when clicking a sidebar item
     let mainDriving = false;
     let lockTimer = null;
+
+    // =====================================================================
+    // Content push — shift main content right when sidebar is visible
+    // =====================================================================
+    function updateContentPush() {
+      let styleEl = document.getElementById("aipt-content-push");
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "aipt-content-push";
+        document.head.appendChild(styleEl);
+      }
+
+      const isVisible = !sidebarCollapsed && !autoHidden;
+      if (isVisible && P.getContentPushCSS) {
+        styleEl.textContent = P.getContentPushCSS(200);
+      } else {
+        styleEl.textContent = "";
+      }
+    }
 
     // =====================================================================
     // Position sidebar relative to platform sidebar
@@ -40,9 +58,11 @@
         sidebar.classList.add("gn-collapsed");
         if (toggle) {
           toggle.style.left = platformWidth + "px";
+          toggle.style.top = ((P.navTopOffset || 0) + 14) + "px";
           toggle.classList.add("gn-toggle-collapsed");
           updateToggleIcon(toggle);
         }
+        updateContentPush();
         return;
       }
 
@@ -53,13 +73,19 @@
         if (toggle) toggle.classList.remove("gn-toggle-collapsed");
       }
 
+      const topOffset = P.navTopOffset || 0;
       sidebar.style.left = platformWidth + "px";
       sidebar.style.width = navWidth + "px";
+      sidebar.style.top = topOffset + "px";
+      sidebar.style.height = "calc(100vh - " + topOffset + "px)";
 
       if (toggle) {
         toggle.style.left = (sidebarCollapsed ? platformWidth : platformWidth + navWidth) + "px";
+        toggle.style.top = (topOffset + 14) + "px";
         updateToggleIcon(toggle);
       }
+
+      updateContentPush();
     }
 
     // Watch platform sidebar for resize
@@ -89,7 +115,48 @@
 
       container.scrollTo({ top: scrollOffset, behavior: "smooth" });
 
+      // Flash highlight — overlay approach for reliability across all hosts
+      setTimeout(() => flashHighlight(promptEl), 400);
+
       lockTimer = setTimeout(() => { mainDriving = false; }, 800);
+    }
+
+    // =====================================================================
+    // Flash highlight overlay — fixed-position overlay on document.body
+    // Uses position:fixed to avoid scroll-container overflow clipping.
+    // =====================================================================
+    function flashHighlight(el) {
+      // Remove any existing overlay
+      const old = document.getElementById("aipt-flash-overlay");
+      if (old) old.remove();
+
+      const rect = el.getBoundingClientRect();
+
+      const overlay = document.createElement("div");
+      overlay.id = "aipt-flash-overlay";
+
+      // Use position:fixed with viewport coordinates — no clipping issues
+      overlay.style.cssText = [
+        "position: fixed",
+        "top: " + (rect.top - 4) + "px",
+        "left: " + (rect.left - 4) + "px",
+        "width: " + (rect.width + 8) + "px",
+        "height: " + (rect.height + 8) + "px",
+        "border: 3px solid rgb(59, 130, 246)",
+        "border-radius: 12px",
+        "box-shadow: 0 0 20px rgba(59, 130, 246, 0.5)",
+        "pointer-events: none",
+        "z-index: 2147483647",
+        "transition: opacity 1.5s ease-out",
+        "opacity: 1",
+      ].join("; ");
+
+      document.body.appendChild(overlay);
+
+      // Start fade after hold period
+      setTimeout(() => { overlay.style.opacity = "0"; }, 2000);
+      // Remove from DOM after fade completes
+      setTimeout(() => { overlay.remove(); }, 3800);
     }
 
     // =====================================================================
@@ -140,6 +207,7 @@
           toggle.classList.toggle("gn-toggle-collapsed", sidebarCollapsed);
           updateToggleIcon(toggle);
           positionSidebar();
+          updateContentPush();
         });
         updateToggleIcon(toggle);
         document.body.appendChild(toggle);
@@ -246,42 +314,11 @@
 
       // Main scroll → highlight sidebar item
       container.addEventListener("scroll", throttle(() => {
-        if (mainDriving || sidebarDriving) return;
+        if (mainDriving) return;
         const idx = getCurrentPromptIndex(prompts);
         if (idx !== activeIndex) setActiveIndex(idx, prompts);
       }, 100), { passive: true });
 
-      // Sidebar scroll → drive main conversation
-      listEl.addEventListener("scroll", throttle(() => {
-        if (mainDriving) return;
-
-        sidebarDriving = true;
-        clearTimeout(lockTimer);
-
-        const listRect = listEl.getBoundingClientRect();
-        const listCenter = listRect.top + listRect.height / 2;
-        const items = listEl.querySelectorAll(".gn-item");
-        let closestIdx = 0;
-        let closestDist = Infinity;
-
-        items.forEach((item, i) => {
-          const itemRect = item.getBoundingClientRect();
-          const itemCenter = itemRect.top + itemRect.height / 2;
-          const dist = Math.abs(itemCenter - listCenter);
-          if (dist < closestDist) {
-            closestDist = dist;
-            closestIdx = i;
-          }
-        });
-
-        if (closestIdx !== activeIndex && prompts[closestIdx]) {
-          activeIndex = closestIdx;
-          items.forEach((el, i) => el.classList.toggle("gn-active", i === closestIdx));
-          scrollMainToPrompt(prompts[closestIdx].element);
-        }
-
-        lockTimer = setTimeout(() => { sidebarDriving = false; }, 600);
-      }, 150), { passive: true });
     }
 
     // =====================================================================
